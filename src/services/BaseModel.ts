@@ -1,88 +1,109 @@
-import db from "../lib/database";
+import db from "@/lib/database";
 
 export interface QueryOptions {
-  sort?: Record<string, 1 | -1>;
+  sort?: string;
+  order?: "asc" | "desc";
   limit?: number;
-  skip?: number;
+  offset?: number;
 }
 
 export abstract class BaseModel<T> {
   protected abstract collectionName: string;
 
-  protected get collection() {
-    return db.collection(this.collectionName);
+  protected get table() {
+    return db.table(this.collectionName);
   }
 
-  // Create
+  // Create - Fix: Cast the return type to number since we use auto-increment
   async create(data: Omit<T, "id">): Promise<number> {
-    const result = await this.collection.insert(data);
-    return result.id;
+    const result = await this.table.add(data);
+    return result as number;
   }
 
   // Read
-  async findById(id: number): Promise<T | null> {
-    const result = await this.collection.find({ id }).first();
-    return result || null;
+  async findById(id: number): Promise<T | undefined> {
+    return await this.table.get(id);
   }
 
   async findAll(options?: QueryOptions): Promise<T[]> {
-    let query = this.collection.find({});
+    let collection = this.table.toCollection();
 
+    // Apply offset first if no sort
+    if (options?.offset && !options?.sort) {
+      collection = collection.offset(options.offset);
+    }
+
+    // Apply limit if no sort
+    if (options?.limit && !options?.sort) {
+      collection = collection.limit(options.limit);
+    }
+
+    // If sort is specified, we need to handle sorting differently
     if (options?.sort) {
-      query = query.sort(options.sort);
-    }
-    if (options?.skip) {
-      query = query.skip(options.skip);
-    }
-    if (options?.limit) {
-      query = query.limit(options.limit);
+      let results = (await collection.sortBy(options.sort)) as T[];
+
+      // Apply order (asc/desc)
+      if (options?.order === "desc") {
+        results = results.slice().reverse();
+      }
+
+      // Apply offset
+      if (options?.offset) {
+        results = results.slice(options.offset);
+      }
+
+      // Apply limit
+      if (options?.limit) {
+        results = results.slice(0, options.limit);
+      }
+
+      return results;
     }
 
-    return query.toArray();
+    // No sort - just return collection results
+    const results = await collection.toArray();
+    return results as T[];
   }
 
-  async findWhere(
-    conditions: Record<string, any>,
-    options?: QueryOptions,
-  ): Promise<T[]> {
-    let query = this.collection.find(conditions);
+  async findWhere(conditions: Record<string, any>): Promise<T[]> {
+    const collection = this.table.toCollection();
 
-    if (options?.sort) {
-      query = query.sort(options.sort);
-    }
-    if (options?.skip) {
-      query = query.skip(options.skip);
-    }
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
+    // Build filter function
+    const filterFn = (item: any) => {
+      return Object.keys(conditions).every((key) => {
+        const value = conditions[key];
+        // Skip undefined or null values
+        if (value === undefined || value === null) return true;
+        return item[key] === value;
+      });
+    };
 
-    return query.toArray();
+    const filtered = collection.filter(filterFn);
+    const result = await filtered.toArray();
+    return result as T[];
   }
 
   // Update
-  async update(id: number, data: Partial<T>): Promise<boolean> {
-    const result = await this.collection.update({ id }, { $set: data });
-    return result > 0;
+  async update(id: number, data: Partial<T>): Promise<number> {
+    return await this.table.update(id, data);
   }
 
   // Delete
-  async delete(id: number): Promise<boolean> {
-    const result = await this.collection.remove({ id });
-    return result > 0;
+  async delete(id: number): Promise<void> {
+    await this.table.delete(id);
   }
 
   // Utility
   async clear(): Promise<void> {
-    await this.collection.remove({});
+    await this.table.clear();
   }
 
   async count(): Promise<number> {
-    return this.collection.find({}).count();
+    return await this.table.count();
   }
 
   async exists(id: number): Promise<boolean> {
-    const result = await this.findById(id);
-    return result !== null;
+    const record = await this.findById(id);
+    return record !== undefined;
   }
 }

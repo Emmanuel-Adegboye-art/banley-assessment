@@ -1,9 +1,7 @@
+import { appSchemas } from "@/services/schema";
 import Dexie from "dexie";
-import dexieMongoify from "dexie-mongoify";
-import dexieRelationships from "dexie-relationships";
 
-const db = new Dexie("TipManagerDB", {
-  addons: [dexieMongoify, dexieRelationships],
-});
+const db = new Dexie("TipManagerDB");
+db.version(1).stores(appSchemas);
 
 export default db;

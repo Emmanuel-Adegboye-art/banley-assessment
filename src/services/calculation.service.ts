@@ -1,6 +1,5 @@
 import { BaseModel } from "./BaseModel";
 
-// Model: Tip calculation data structure
 export interface TipCalculation {
   id?: number;
   restaurantId: number;
@@ -14,15 +13,12 @@ export interface TipCalculation {
   createdAt: string;
 }
 
-// Service: Tip calculation business logic
 export class CalculationService extends BaseModel<TipCalculation> {
   protected collectionName = "calculations";
 
   // Get all calculations for a specific restaurant
   async findByRestaurantId(restaurantId: number): Promise<TipCalculation[]> {
-    return this.findWhere({
-      restaurantId: restaurantId,
-    });
+    return this.findWhere({ restaurantId });
   }
 
   // Get latest calculations for a restaurant (with limit)
@@ -30,15 +26,13 @@ export class CalculationService extends BaseModel<TipCalculation> {
     restaurantId: number,
     limit: number = 10,
   ): Promise<TipCalculation[]> {
-    return this.findWhere(
-      {
-        restaurantId: restaurantId,
-      },
-      {
-        sort: { createdAt: -1 },
-        limit: limit,
-      },
-    );
+    const all = await this.findByRestaurantId(restaurantId);
+    return all
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+      .slice(0, limit);
   }
 
   // Get calculations by date range
@@ -47,13 +41,10 @@ export class CalculationService extends BaseModel<TipCalculation> {
     startDate: string,
     endDate: string,
   ): Promise<TipCalculation[]> {
-    return this.findWhere({
-      restaurantId: restaurantId,
-      createdAt: {
-        $gte: startDate,
-        $lte: endDate,
-      },
-    });
+    const all = await this.findByRestaurantId(restaurantId);
+    return all.filter(
+      (calc) => calc.createdAt >= startDate && calc.createdAt <= endDate,
+    );
   }
 
   // Get total tips for a restaurant
@@ -74,6 +65,12 @@ export class CalculationService extends BaseModel<TipCalculation> {
   async getTotalBills(restaurantId: number): Promise<number> {
     const calculations = await this.findByRestaurantId(restaurantId);
     return calculations.reduce((sum, calc) => sum + calc.billAmount, 0);
+  }
+
+  // Get total number of visits for a restaurant
+  async getTotalVisits(restaurantId: number): Promise<number> {
+    const calculations = await this.findByRestaurantId(restaurantId);
+    return calculations.length;
   }
 
   // Delete all calculations for a restaurant

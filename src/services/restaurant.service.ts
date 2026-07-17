@@ -5,10 +5,8 @@ export interface Restaurant {
   name: string;
   tipPercentage: number;
   currency: string;
-  location: {
-    city: string;
-    state: string;
-  };
+  city: string;
+  state: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,38 +14,31 @@ export interface Restaurant {
 export class RestaurantService extends BaseModel<Restaurant> {
   protected collectionName = "restaurants";
 
-  // Find by name (partial match, case insensitive)
+  // Find by name (exact match)
   async findByName(name: string): Promise<Restaurant[]> {
-    return this.findWhere({
-      name: { $regex: name, $options: "i" },
-    });
+    return this.findWhere({ name });
   }
 
-  // Find by city
+  // Find by city (exact match)
   async findByCity(city: string): Promise<Restaurant[]> {
-    return this.findWhere({
-      "location.city": { $regex: city, $options: "i" },
-    });
+    return this.findWhere({ city });
   }
 
-  // Find by state
+  // Find by state (exact match)
   async findByState(state: string): Promise<Restaurant[]> {
-    return this.findWhere({
-      "location.state": { $regex: state, $options: "i" },
-    });
+    return this.findWhere({ state });
   }
 
-  // Find by tip percentage
+  // Find by tip percentage (exact match)
   async findByTipPercentage(percentage: number): Promise<Restaurant[]> {
-    return this.findWhere({
-      tipPercentage: percentage,
-    });
+    return this.findWhere({ tipPercentage: percentage });
   }
 
   // Get latest restaurants
   async getLatest(limit: number = 10): Promise<Restaurant[]> {
     return this.findAll({
-      sort: { createdAt: -1 },
+      sort: "createdAt",
+      order: "desc",
       limit,
     });
   }
@@ -56,7 +47,7 @@ export class RestaurantService extends BaseModel<Restaurant> {
   async updateTipPercentage(
     id: number,
     tipPercentage: number,
-  ): Promise<boolean> {
+  ): Promise<number> {
     return this.update(id, {
       tipPercentage,
       updatedAt: new Date().toISOString(),
@@ -68,9 +59,10 @@ export class RestaurantService extends BaseModel<Restaurant> {
     id: number,
     city: string,
     state: string,
-  ): Promise<boolean> {
+  ): Promise<number> {
     return this.update(id, {
-      location: { city, state },
+      city,
+      state,
       updatedAt: new Date().toISOString(),
     });
   }
