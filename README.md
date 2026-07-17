@@ -1,75 +1,128 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+# Restaurant Tip Manager
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+A Restaurant Tip Manager application built with React, TypeScript, and shadcn/ui.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Project Overview
 
-## Expanding the ESLint configuration
+This is a base application for the Banley internship assessment. The application allows users to manage restaurants and calculate tips.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Already Built:**
+- Restaurant CRUD (Create, Read, Update, Delete)
+- Dashboard with charts and stats
+- Sidebar navigation with theme switcher
+- Database layer with IndexedDB
+- Services for data operations
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Your Task:**
+Build the complete **Tips** page functionality. See the assessment instructions for details.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Tech Stack
 
+- React 19+
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Dexie.js (IndexedDB wrapper)
+- Sonner (toasts)
+- Recharts (charts)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Kudagon/banley-assessment.git
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project Structure
 
 ```
+src/
+├── components/
+│   ├── layout/          # Layout components (sidebar, header)
+│   └── ui/              # shadcn/ui components
+├── lib/
+│   └── database.ts      # Dexie database setup
+├── pages/
+│   ├── Dashboard.tsx    # Dashboard page (complete)
+│   ├── Restaurants.tsx  # Restaurants page (complete)
+│   └── Tips.tsx         # Tips page (your task)
+├── services/
+│   ├── BaseModel.ts     # Base service with CRUD operations
+│   ├── restaurant.service.ts
+│   ├── calculation.service.ts
+│   └── README.md        # Services documentation
+├── providers/
+│   └── ThemeProvider.tsx
+└── App.tsx
+```
+
+---
+
+## Services
+
+The application uses a service layer to handle data operations with IndexedDB.
+
+**Key Services:**
+- `RestaurantService` — Manage restaurants
+- `CalculationService` — Manage tip calculations
+
+**Documentation:** See `src/services/README.md`
+
+---
+
+## Database
+
+The application uses IndexedDB via Dexie.js. The database schema includes:
+
+- `restaurants` — Store restaurant data
+- `calculations` — Store tip calculations
+
+---
+
+## Assessment Instructions
+
+Full assessment details are available in the assessment document. Key tasks:
+
+1. Complete the Tips page functionality
+2. Submit via pull request
+3. Record a video walkthrough
+4. Post on LinkedIn with @kudagon
+
+---
+
+## License
+
+This project is for assessment purposes only.
+
+---
+
+## Support
+
+For questions during the assessment, comment on your issue or message @kudagon on LinkedIn.
