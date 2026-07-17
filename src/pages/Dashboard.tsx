@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
+  Cell,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,7 +95,9 @@ export function Dashboard() {
             restaurant.id!,
           );
           const total = calcs.reduce((sum, c) => sum + c.totalTip, 0);
-          tipsMap.set(restaurant.name, total);
+          if (total > 0) {
+            tipsMap.set(restaurant.name, total);
+          }
         }
         const tipsData = Array.from(tipsMap.entries())
           .map(([name, tips]) => ({ name, tips }))
@@ -102,13 +105,15 @@ export function Dashboard() {
           .slice(0, 10);
         setTipsByRestaurant(tipsData);
 
-        // Visits by Restaurant (Bar Chart)
+        // Visits by Restaurant (Pie Chart)
         const visitsMap = new Map<string, number>();
         for (const restaurant of restaurants) {
           const calcs = await calculationService.findByRestaurantId(
             restaurant.id!,
           );
-          visitsMap.set(restaurant.name, calcs.length);
+          if (calcs.length > 0) {
+            visitsMap.set(restaurant.name, calcs.length);
+          }
         }
         const visitsData = Array.from(visitsMap.entries())
           .map(([name, visits]) => ({ name, visits }))
@@ -183,9 +188,9 @@ export function Dashboard() {
         />
       </div>
 
-      {/* Charts - Same as before */}
+      {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Tips by Restaurant */}
+        {/* Tips by Restaurant - Bar Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
@@ -205,17 +210,11 @@ export function Dashboard() {
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                   <XAxis
                     dataKey="name"
-                    tick={{
-                      fontSize: 12,
-                      fill: "var(--muted-foreground)",
-                    }}
+                    tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                     stroke="var(--border)"
                   />
                   <YAxis
-                    tick={{
-                      fontSize: 12,
-                      fill: "var(--muted-foreground)",
-                    }}
+                    tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                     stroke="var(--border)"
                   />
                   <Tooltip
@@ -237,8 +236,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Visits by Restaurant */}
-        {/* Visits by Restaurant (Pie Chart) */}
+        {/* Visits by Restaurant - Pie Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
@@ -267,46 +265,14 @@ export function Dashboard() {
                     dataKey="visits"
                     stroke="var(--background)"
                     strokeWidth={2}
-                    shape={(props: any) => {
-                      const {
-                        cx,
-                        cy,
-                        outerRadius,
-                        startAngle,
-                        endAngle,
-                        payload,
-                      } = props;
-                      const index = visitsByRestaurant.findIndex(
-                        (item) => item.name === payload?.name,
-                      );
-                      const fill = CHART_COLORS[index % CHART_COLORS.length];
-
-                      const startRad = (-startAngle * Math.PI) / 180;
-                      const endRad = (-endAngle * Math.PI) / 180;
-                      const outerR = outerRadius || 0;
-
-                      if (startAngle === endAngle) return null;
-
-                      const x1 = cx + outerR * Math.cos(startRad);
-                      const y1 = cy + outerR * Math.sin(startRad);
-                      const x2 = cx + outerR * Math.cos(endRad);
-                      const y2 = cy + outerR * Math.sin(endRad);
-
-                      const largeArcFlag =
-                        Math.abs(endAngle - startAngle) > 180 ? 1 : 0;
-
-                      const path = `M ${x1},${y1} A ${outerR},${outerR} 0 ${largeArcFlag},1 ${x2},${y2} L ${cx},${cy} Z`;
-
-                      return (
-                        <path
-                          d={path}
-                          fill={fill}
-                          stroke="var(--background)"
-                          strokeWidth={2}
-                        />
-                      );
-                    }}
-                  />
+                  >
+                    {visitsByRestaurant.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "var(--background)",
@@ -321,7 +287,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Tip Distribution (Pie Chart) - Full Width */}
+        {/* Tip Distribution - Pie Chart (Full Width) */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="text-sm font-medium">
@@ -355,48 +321,14 @@ export function Dashboard() {
                       dataKey="value"
                       stroke="var(--background)"
                       strokeWidth={2}
-                      shape={(props: any) => {
-                        const {
-                          cx,
-                          cy,
-                          outerRadius,
-                          startAngle,
-                          endAngle,
-                          payload,
-                        } = props;
-                        const index = tipDistribution.findIndex(
-                          (item) => item.name === payload?.name,
-                        );
-                        const fill = CHART_COLORS[index % CHART_COLORS.length];
-
-                        // Calculate the arc path
-                        const startRad = (-startAngle * Math.PI) / 180;
-                        const endRad = (-endAngle * Math.PI) / 180;
-                        const outerR = outerRadius || 0;
-
-                        // If the arc is empty, return null
-                        if (startAngle === endAngle) return null;
-
-                        const x1 = cx + outerR * Math.cos(startRad);
-                        const y1 = cy + outerR * Math.sin(startRad);
-                        const x2 = cx + outerR * Math.cos(endRad);
-                        const y2 = cy + outerR * Math.sin(endRad);
-
-                        const largeArcFlag =
-                          Math.abs(endAngle - startAngle) > 180 ? 1 : 0;
-
-                        const path = `M ${x1},${y1} A ${outerR},${outerR} 0 ${largeArcFlag},1 ${x2},${y2} L ${cx},${cy} Z`;
-
-                        return (
-                          <path
-                            d={path}
-                            fill={fill}
-                            stroke="var(--background)"
-                            strokeWidth={2}
-                          />
-                        );
-                      }}
-                    />
+                    >
+                      {tipDistribution.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "var(--background)",
