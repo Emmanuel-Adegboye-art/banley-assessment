@@ -369,10 +369,10 @@ export function Tips() {
   };
 
   const formatCurrency = (amount: number, restaurantId?: number) => {
-    let currencySymbol = "$";
+    let currency = "$";
     if (restaurantId) {
       const restaurant = restaurants.find((r) => r.id === restaurantId);
-      currencySymbol = restaurant?.currency || "$";
+      currency = restaurant?.currency || "$";
     }
     return new Intl.NumberFormat("en-US", {
       style: "currency",
