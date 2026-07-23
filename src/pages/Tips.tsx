@@ -8,17 +8,16 @@ import {
   Search,
   Filter,
   Download,
-  Calendar,
   DollarSign,
   Percent,
   Store,
-  User,
+  Users,
   Clock,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
